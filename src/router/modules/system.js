@@ -25,6 +25,15 @@ export default {
             component: () => import('@/pages/sys/user')
         },
         {
+            path: 'userManagement',
+            name: `${pre}userManagement`,
+            meta: {
+                ...meta,
+                title: '用户管理-测试'
+            },
+            component: () => import('@/pages/sys/user-management')
+        },
+        {
             path: 'menu',
             name: `${pre}menu`,
             meta: {

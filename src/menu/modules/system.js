@@ -11,6 +11,10 @@ export default {
             title: '用户管理'
         },
         {
+            path: `${pre}userManagement`,
+            title: '用户管理-测试'
+        },
+        {
             path: `${pre}menu`,
             title: '菜单权限管理'
         },

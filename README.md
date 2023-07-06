@@ -1,1 +1,1 @@
-# iView Admin Pro
+# test-platform
