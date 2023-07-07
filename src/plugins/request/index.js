@@ -6,14 +6,14 @@ import Setting from '@/setting';
 import { Message, Notice } from 'view-design';
 
 // 创建一个错误
-function errorCreate (msg) {
+function errorCreate(msg) {
     const err = new Error(msg);
     errorLog(err);
     throw err;
 }
 
 // 记录和显示错误
-function errorLog (err) {
+function errorLog(err) {
     // 添加到日志
     store.dispatch('admin/log/push', {
         message: '数据请求异常',
@@ -45,6 +45,9 @@ function errorLog (err) {
 // 创建一个 axios 实例
 const service = axios.create({
     baseURL: Setting.apiBaseURL,
+    headers: {
+        'Content-Type': 'application/json;charset=utf-8'
+    },
     timeout: 5000 // 请求超时时间
 });
 
@@ -55,6 +58,10 @@ service.interceptors.request.use(
         const token = util.cookies.get('token');
         // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
         config.headers['X-Token'] = token;
+        if (token) {
+            config.headers.Authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdlMDczNDMzZWVhMTU1MzkxYjA1MjgiLCJpYXQiOjE2ODg3MTU5ODgsImV4cCI6MTY4ODgwMjM4OH0.KrqNLrD5PrkvWg3bhO7nZ42vxgHvGb25cNE5AboXEPM';
+        }
+
         return config;
     },
     error => {
@@ -78,38 +85,38 @@ service.interceptors.response.use(
         } else {
             // 有 code 代表这是一个后端接口 可以进行进一步的判断
             switch (code) {
-            case 0:
-                // [ 示例 ] code === 0 代表没有错误
-                return dataAxios.data;
+                case 0:
+                    // [ 示例 ] code === 0 代表没有错误
+                    return dataAxios.data;
                 case 200:
-                // [ 示例 ] code === 0 代表没有错误
-                return dataAxios;
-            case 'xxx':
-                // [ 示例 ] 其它和后台约定的 code
-                errorCreate(`[ code: xxx ] ${dataAxios.msg}: ${response.config.url}`);
-                break;
-            default:
-                // 不是正确的 code
-                errorCreate(`${dataAxios.msg}: ${response.config.url}`);
-                break;
+                    // [ 示例 ] code === 0 代表没有错误
+                    return dataAxios;
+                case 'xxx':
+                    // [ 示例 ] 其它和后台约定的 code
+                    errorCreate(`[ code: xxx ] ${dataAxios.msg}: ${response.config.url}`);
+                    break;
+                default:
+                    // 不是正确的 code
+                    errorCreate(`${dataAxios.msg}: ${response.config.url}`);
+                    break;
             }
         }
     },
     error => {
         if (error && error.response) {
             switch (error.response.status) {
-            case 400: error.message = '请求错误'; break;
-            case 401: error.message = '未授权，请登录'; break;
-            case 403: error.message = '拒绝访问'; break;
-            case 404: error.message = `请求地址出错: ${error.response.config.url}`; break;
-            case 408: error.message = '请求超时'; break;
-            case 500: error.message = '服务器内部错误'; break;
-            case 501: error.message = '服务未实现'; break;
-            case 502: error.message = '网关错误'; break;
-            case 503: error.message = '服务不可用'; break;
-            case 504: error.message = '网关超时'; break;
-            case 505: error.message = 'HTTP版本不受支持'; break;
-            default: break;
+                case 400: error.message = '请求错误'; break;
+                case 401: error.message = '未授权，请登录'; break;
+                case 403: error.message = '拒绝访问'; break;
+                case 404: error.message = `请求地址出错: ${error.response.config.url}`; break;
+                case 408: error.message = '请求超时'; break;
+                case 500: error.message = '服务器内部错误'; break;
+                case 501: error.message = '服务未实现'; break;
+                case 502: error.message = '网关错误'; break;
+                case 503: error.message = '服务不可用'; break;
+                case 504: error.message = '网关超时'; break;
+                case 505: error.message = 'HTTP版本不受支持'; break;
+                default: break;
             }
         }
         errorLog(error);

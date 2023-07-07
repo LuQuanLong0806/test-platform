@@ -14,7 +14,7 @@ const Generator = (prop, template) => {
     obj[prop] = [template];
     return Mock.mock(obj);
 };
-
+  
 /* 扩展 [循环] */
 const Repeat = (num, itemTemplate) => Generator(`data|${num}`, itemTemplate).data;
 
