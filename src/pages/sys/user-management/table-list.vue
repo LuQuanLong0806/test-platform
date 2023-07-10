@@ -432,7 +432,7 @@ export default {
       if (this.loading) return;
       this.loading = true;
       // 下面的 params 是获取的表单查询参数
-      const params = this.$parent.$parent.$refs.form.data;
+    //   const params = this.$parent.$parent.$refs.form.data;
       getUserList({}).then((res) => {
         console.log("getUserList~~~~", res);
         this.handleClearSelect();
@@ -440,6 +440,8 @@ export default {
         this.total = res.total;
         this.loading = false;
       });
+        this.loading = false;
+
       getCollectPosts({}).then((res) => {
         console.log("res~~~~", res);
       });

@@ -57,11 +57,11 @@ service.interceptors.request.use(
         // 在请求发送之前做一些处理
         const token = util.cookies.get('token');
         // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
-        config.headers['X-Token'] = token;
         if (token) {
-            config.headers.Authorization = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdlMDczNDMzZWVhMTU1MzkxYjA1MjgiLCJpYXQiOjE2ODg3MTU5ODgsImV4cCI6MTY4ODgwMjM4OH0.KrqNLrD5PrkvWg3bhO7nZ42vxgHvGb25cNE5AboXEPM';
+            config.headers = {
+                Authorization: 'Bearer ' + token,
+            }
         }
-
         return config;
     },
     error => {
@@ -103,6 +103,7 @@ service.interceptors.response.use(
         }
     },
     error => {
+        console.log('error11111111111111111111111111~', error.response);
         if (error && error.response) {
             switch (error.response.status) {
                 case 400: error.message = '请求错误'; break;

@@ -18,7 +18,7 @@ export function getApplyist(data) {
 
 export const getCollectPosts = (data) => {
     return request({
-        url: '/user/collect/posts',
+        url: '/content/collect/posts',
         method: 'get',
         params: data
     });

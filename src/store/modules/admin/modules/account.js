@@ -1,3 +1,16 @@
+const userDB = [
+    {
+        username: "admin",
+        password: "admin",
+        uuid: "admin-uuid",
+        info: {
+            name: "Aresn",
+            avatar:
+                "https://dev-file.iviewui.com/userinfoPDvn9gKWYihR24SpgC319vXY8qniCqj4/avatar",
+            access: ["admin"],
+        },
+    },
+];
 /**
  * 注册、登录、注销
  * */
@@ -7,6 +20,35 @@ import { AccountLogin, AccountRegister } from '@api/account';
 
 import { Modal } from 'view-design';
 
+// 本地登录
+const handleLogin = (body) => {
+    const user = userDB.find(
+        (e) => e.username === body.username && e.password === body.password
+    );
+    if (user) {
+        return {
+            code: 0,
+            msg: "登录成功",
+            data: {
+                ...user,
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdlMDczNDMzZWVhMTU1MzkxYjA1MjgiLCJpYXQiOjE2ODg5Nzg3MTQsImV4cCI6MTY4OTA2NTExNH0.VH52uaj81o9iW04qxVDdSKhvACIXrIRhOTsgi5dGDJY",
+            },
+        };
+    } else {
+        return {
+            code: 401,
+            msg: "用户名或密码错误",
+            data: {},
+        };
+    }
+}
+
+const testLogin = (obj) => {
+    return new Promise((resolve, reject) => {
+        let res = handleLogin(obj)
+        resolve(res.data)
+    })
+}
 export default {
     namespaced: true,
     actions: {
@@ -17,32 +59,35 @@ export default {
          * @param {Object} param password {String} 密码
          * @param {Object} param route {Object} 登录成功后定向的路由对象 任何 vue-router 支持的格式
          */
-        login ({ dispatch }, {
+        login({ dispatch }, {
             username = '',
             password = ''
         } = {}) {
             return new Promise((resolve, reject) => {
                 // 开始请求登录接口
-                AccountLogin({
+                // AccountLogin({
+                //     username,
+                //     password
+                // })
+                testLogin({
                     username,
                     password
+                }).then(async res => {
+                    // 设置 cookie 一定要存 uuid 和 token 两个 cookie
+                    // 整个系统依赖这两个数据进行校验和存储
+                    // uuid 是用户身份唯一标识 用户注册的时候确定 并且不可改变 不可重复
+                    // token 代表用户当前登录状态 建议在网络请求中携带 token
+                    // 如有必要 token 需要定时更新，默认保存一天，可在 setting.js 中修改
+                    // 如果你的 token 不是通过 cookie 携带，而是普通字段，也可视情况存储在 localStorage
+                    util.cookies.set('uuid', res.uuid);
+                    util.cookies.set('token', res.token);
+                    // 设置 vuex 用户信息
+                    await dispatch('admin/user/set', res.info, { root: true });
+                    // 用户登录后从持久化数据加载一系列的设置
+                    await dispatch('load');
+                    // 结束
+                    resolve();
                 })
-                    .then(async res => {
-                        // 设置 cookie 一定要存 uuid 和 token 两个 cookie
-                        // 整个系统依赖这两个数据进行校验和存储
-                        // uuid 是用户身份唯一标识 用户注册的时候确定 并且不可改变 不可重复
-                        // token 代表用户当前登录状态 建议在网络请求中携带 token
-                        // 如有必要 token 需要定时更新，默认保存一天，可在 setting.js 中修改
-                        // 如果你的 token 不是通过 cookie 携带，而是普通字段，也可视情况存储在 localStorage
-                        util.cookies.set('uuid', res.uuid);
-                        util.cookies.set('token', res.token);
-                        // 设置 vuex 用户信息
-                        await dispatch('admin/user/set', res.info, { root: true });
-                        // 用户登录后从持久化数据加载一系列的设置
-                        await dispatch('load');
-                        // 结束
-                        resolve();
-                    })
                     .catch(err => {
                         // console.log('err: ', err);
                         reject(err);
@@ -52,8 +97,8 @@ export default {
         /**
          * @description 退出登录
          * */
-        logout ({ commit, dispatch }, { confirm = false, vm } = {}) {
-            async function logout () {
+        logout({ commit, dispatch }, { confirm = false, vm } = {}) {
+            async function logout() {
                 // 删除cookie
                 util.cookies.remove('token');
                 util.cookies.remove('uuid');
@@ -69,7 +114,7 @@ export default {
                 Modal.confirm({
                     title: vm.$t('basicLayout.logout.confirmTitle'),
                     content: vm.$t('basicLayout.logout.confirmContent'),
-                    onOk () {
+                    onOk() {
                         logout();
                     }
                 });
@@ -85,7 +130,7 @@ export default {
          * @param {Object} param mobile {String} 手机号码
          * @param {Object} param captcha {String} 验证码
          */
-        register ({ dispatch }, {
+        register({ dispatch }, {
             mail = '',
             password = '',
             mobile = '',
@@ -122,7 +167,7 @@ export default {
          * @param {Object} state vuex state
          * @param {Object} dispatch vuex dispatch
          */
-        load ({ state, dispatch }) {
+        load({ state, dispatch }) {
             return new Promise(async resolve => {
                 // 加载用户登录信息
                 await dispatch('admin/user/load', null, { root: true });
