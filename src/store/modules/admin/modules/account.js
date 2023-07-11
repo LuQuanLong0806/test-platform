@@ -31,7 +31,7 @@ const handleLogin = (body) => {
             msg: "登录成功",
             data: {
                 ...user,
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdlMDczNDMzZWVhMTU1MzkxYjA1MjgiLCJpYXQiOjE2ODg5Nzg3MTQsImV4cCI6MTY4OTA2NTExNH0.VH52uaj81o9iW04qxVDdSKhvACIXrIRhOTsgi5dGDJY",
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjdlMDczNDMzZWVhMTU1MzkxYjA1MjgiLCJpYXQiOjE2ODkwMzQyNTEsImV4cCI6MTY5MTYyNjI1MX0.HznkXiymRQiy276lT8VBtpEs86zwmgpjmMXhtn9SDHQ",
             },
         };
     } else {

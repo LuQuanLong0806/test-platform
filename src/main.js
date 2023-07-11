@@ -41,6 +41,10 @@ import iFrame from '@/components/frame';
 import './styles/index.less';
 import './libs/iview-pro/iview-pro.css';
 
+
+import dayjs from "dayjs";
+Vue.prototype.$dayjs = dayjs
+
 if (window) window.$t = (key, value) => i18n.t(key, value);
 
 Vue.use(plugins);
@@ -58,7 +62,7 @@ new Vue({
     store,
     i18n,
     render: h => h(App),
-    created () {
+    created() {
         // 处理路由 得到每一级的路由设置
         this.$store.commit('admin/page/init', frameInRoutes);
         // 设置顶栏菜单
@@ -70,7 +74,7 @@ new Vue({
     },
     watch: {
         // 监听路由 控制侧边栏显示 标记当前顶栏菜单（如需要）
-        '$route' (to, from) {
+        '$route'(to, from) {
             let path = to.matched[to.matched.length - 1].path;
             if (!Setting.dynamicSiderMenu) {
                 let headerName = getHeaderName(path, menuSider);

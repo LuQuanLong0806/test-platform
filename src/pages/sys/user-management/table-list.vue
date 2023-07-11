@@ -87,8 +87,8 @@
       @on-select-all="handleSelectAll"
       @on-select-all-cancel="handleClearSelect"
     >
-      <template slot-scope="{ row }" slot="name">
-        <Avatar shape="square" :src="row.avatar" v-if="row.avatar" />
+      <template slot-scope="{ row }" slot="nickname">
+        <Avatar shape="square" :src="row.pic" v-if="row.pic" />
         <Avatar shape="square" icon="ios-person" v-else />
         {{ row.name }}
       </template>
@@ -98,8 +98,9 @@
         <Badge v-if="row.status === 3" color="red" text="关闭" />
       </template>
       <template slot-scope="{ row }" slot="gender">
-        <Tag v-if="row.gender === 1" color="blue">男</Tag>
-        <Tag v-if="row.gender === 2" color="magenta">女</Tag>
+        <Tag v-if="row.gender == 1" color="blue">男</Tag>
+        <Tag v-if="row.gender == 0" color="magenta">女</Tag>
+        <Tag v-if="row.gender == 2">保密</Tag>
       </template>
       <template slot-scope="{ row }" slot="action">
         <div @click.stop.prevent>
@@ -112,7 +113,7 @@
     <div class="ivu-mt ivu-text-center">
       <Page
         :total="total"
-        :current.sync="current"
+        :current.sync="page"
         show-total
         show-sizer
         show-elevator
@@ -121,6 +122,7 @@
         @on-page-size-change="handleChangePageSize"
       />
     </div>
+    <!-- 新增/编辑 用户信息 -->
     <Drawer
       :styles="drawer.styles"
       v-model="drawer.show"
@@ -294,14 +296,14 @@
 </template>
 <script>
 import {
-  GetUserList,
   DeleteUser,
   DeleteUserMultiple,
   UpdateUser,
   CreateUser,
 } from "@api/system";
 import { cloneDeep } from "lodash";
-import { getUserList, getCollectPosts, getCaptcha } from "@api/admin";
+import { getUserList } from "@api/admin";
+import dayjs from "dayjs";
 
 export default {
   data() {
@@ -315,69 +317,66 @@ export default {
         },
         {
           title: "用户名",
-          key: "name",
-          slot: "name",
-          sortable: "custom",
-          minWidth: 140,
+          key: "nickname",
+          slot: "nickname",
+          minWidth: 240,
           show: true,
+          align: "center",
         },
         {
           title: "登录账号",
-          key: "account",
-          sortable: "custom",
-          minWidth: 120,
+          key: "name",
+          minWidth: 200,
+          align: "center",
           show: true,
         },
         {
           title: "手机号",
           key: "phone",
           minWidth: 140,
+          align: "center",
           show: true,
         },
         {
           title: "邮箱",
-          key: "mail",
+          key: "name",
           minWidth: 200,
+          align: "center",
           show: true,
         },
         {
           title: "性别",
           key: "gender",
           slot: "gender",
-          minWidth: 100,
+          align: "center",
+          minWidth: 70,
           show: true,
         },
         {
           title: "状态",
           key: "status",
           slot: "status",
+          align: "center",
           minWidth: 100,
           show: true,
         },
         {
           title: "创建时间",
-          key: "date",
-          sortable: "custom",
-          minWidth: 200,
+          minWidth: 180,
           show: true,
-        },
-        {
-          title: "用户 ID",
-          key: "id",
-          minWidth: 120,
-          show: false,
-        },
-        {
-          title: "生日",
-          key: "birthday",
-          minWidth: 120,
-          show: false,
+          align: "center",
+          render(h, params) {
+            return h(
+              "span",
+              dayjs(params.row.created).format("YYYY-MM-DD HH:mm:ss")
+            );
+          },
         },
         {
           title: "操作",
           key: "action",
           slot: "action",
-          minWidth: 120,
+          minWidth: 100,
           align: "center",
           fixed: "right",
           show: true,
@@ -386,7 +385,7 @@ export default {
       loading: false,
       list: [],
       selectedData: [],
-      current: 1,
+      page: 1,
       limit: 10,
       total: 0,
       sortType: "normal", // 当前排序类型，可选值为：normal（默认） || asc（升序）|| desc（降序）,
@@ -424,7 +423,7 @@ export default {
       return columns.filter((item) => item.show);
     },
     offset() {
-      return (this.current - 1) * this.limit;
+      return (this.page - 1) * this.limit;
     },
   },
   methods: {
@@ -432,23 +431,14 @@ export default {
       if (this.loading) return;
       this.loading = true;
       // 下面的 params 是获取的表单查询参数
-    //   const params = this.$parent.$parent.$refs.form.data;
+      const params = this.$parent.$parent.$refs.form.data;
       getUserList({}).then((res) => {
-        console.log("getUserList~~~~", res);
         this.handleClearSelect();
         this.list = res.data;
         this.total = res.total;
         this.loading = false;
       });
-        this.loading = false;
-
-      getCollectPosts({}).then((res) => {
-        console.log("res~~~~", res);
-      });
-
-      getCaptcha({}).then((res) => {
-        console.log("getCaptcha~~~~", res);
-      });
+      this.loading = false;
     },
     // 改变表格尺寸
     handleChangeTableSize(size) {
@@ -465,18 +455,18 @@ export default {
     },
     // 切换页码
     handleChangePage(page) {
-      this.current = page;
+      this.page = page;
       this.getData();
     },
     // 切换每页条数
     handleChangePageSize(size) {
-      this.current = 1;
+      this.page = 1;
       this.limit = size;
       this.getData();
     },
     // 排序
     handleSortChange({ key, order }) {
-      this.current = 1;
+      this.page = 1;
       this.sortType = order;
       this.sortKey = key;
       this.getData();
