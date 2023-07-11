@@ -31,3 +31,19 @@ export const getCaptcha = (data) => {
         params: data
     });
 }
+
+export const editUserInfo = (data) => {
+    return request({
+        url: '/platform/user/eidt',
+        method: 'post',
+        data
+    });
+}
+
+export const addUser = (data) => {
+    return request({
+        url: '/platform/user/add',
+        method: 'post',
+        data
+    });
+}
