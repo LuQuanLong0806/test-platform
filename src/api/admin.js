@@ -47,3 +47,11 @@ export const addUser = (data) => {
         data
     });
 }
+
+export const deleteUsers = (data) => {
+    return request({
+        url: '/platform/user/delete',
+        method: 'post',
+        data
+    });
+}

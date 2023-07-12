@@ -106,7 +106,7 @@
         <div @click.stop.prevent>
           <a type="text" @click="handleEdit(row)">编辑</a>
           <Divider type="vertical" />
-          <a type="text" @click="handleDelete(row.id)">删除</a>
+          <a type="text" @click="handleDelete(row)">删除</a>
         </div>
       </template>
     </Table>
@@ -295,90 +295,85 @@
   </div>
 </template>
 <script>
-import {
-  DeleteUser,
-  DeleteUserMultiple,
-  UpdateUser,
-  CreateUser,
-} from '@api/system'
-import { cloneDeep } from 'lodash'
-import { getUserList, editUserInfo, addUser } from '@api/admin'
-import dayjs from 'dayjs'
+import { CreateUser } from "@api/system";
+import { cloneDeep } from "lodash";
+import { getUserList, editUserInfo, addUser, deleteUsers } from "@api/admin";
+import dayjs from "dayjs";
 
 export default {
   data() {
     return {
       columns: [
         {
-          type: 'selection',
+          type: "selection",
           minWidth: 60,
-          align: 'center',
+          align: "center",
           show: true,
         },
         {
-          title: '用户名',
-          key: 'nickname',
-          slot: 'nickname',
+          title: "用户名",
+          key: "nickname",
+          slot: "nickname",
           minWidth: 240,
           show: true,
-          align: 'center',
+          align: "center",
         },
         {
-          title: '登录账号',
-          key: 'name',
+          title: "登录账号",
+          key: "name",
           minWidth: 200,
-          align: 'center',
+          align: "center",
           show: true,
         },
         {
-          title: '手机号',
-          key: 'phone',
+          title: "手机号",
+          key: "phone",
           minWidth: 140,
-          align: 'center',
+          align: "center",
           show: true,
         },
         {
-          title: '邮箱',
-          key: 'name',
+          title: "邮箱",
+          key: "name",
           minWidth: 200,
-          align: 'center',
+          align: "center",
           show: true,
         },
         {
-          title: '性别',
-          key: 'gender',
-          slot: 'gender',
-          align: 'center',
+          title: "性别",
+          key: "gender",
+          slot: "gender",
+          align: "center",
           minWidth: 70,
           show: true,
         },
         {
-          title: '状态',
-          key: 'status',
-          slot: 'status',
-          align: 'center',
+          title: "状态",
+          key: "status",
+          slot: "status",
+          align: "center",
           minWidth: 100,
           show: true,
         },
         {
-          title: '创建时间',
+          title: "创建时间",
           minWidth: 180,
           show: true,
-          align: 'center',
+          align: "center",
           render(h, params) {
             return h(
-              'span',
-              dayjs(params.row.created).format('YYYY-MM-DD HH:mm:ss')
-            )
+              "span",
+              dayjs(params.row.created).format("YYYY-MM-DD HH:mm:ss")
+            );
           },
         },
         {
-          title: '操作',
-          key: 'action',
-          slot: 'action',
+          title: "操作",
+          key: "action",
+          slot: "action",
           minWidth: 100,
-          align: 'center',
-          fixed: 'right',
+          align: "center",
+          fixed: "right",
           show: true,
         },
       ],
@@ -388,158 +383,158 @@ export default {
       page: 1,
       limit: 10,
       total: 0,
-      sortType: 'normal', // 当前排序类型，可选值为：normal（默认） || asc（升序）|| desc（降序）,
-      sortKey: '', // 排序列的 key
-      tableSize: 'default',
+      sortType: "normal", // 当前排序类型，可选值为：normal（默认） || asc（升序）|| desc（降序）,
+      sortKey: "", // 排序列的 key
+      tableSize: "default",
       tableFullscreen: false,
       userInfo: null, // 当前选中的用户信息
-      userInfoString: '', // 当前选中的用户信息字符串
+      userInfoString: "", // 当前选中的用户信息字符串
       userInfoRules: {
-        name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-        phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
-        mail: [{ required: true, message: '请输入邮箱', trigger: 'blur' }],
+        name: [{ required: true, message: "请输入用户名", trigger: "blur" }],
+        phone: [{ required: true, message: "请输入手机号", trigger: "blur" }],
+        mail: [{ required: true, message: "请输入邮箱", trigger: "blur" }],
         account: [
-          { required: true, message: '请输入登录账号', trigger: 'blur' },
+          { required: true, message: "请输入登录账号", trigger: "blur" },
         ],
       },
       userInfoFormReady: true,
       drawer: {
         show: false,
-        type: 'edit', // edit || read || new
+        type: "edit", // edit || read || new
         styles: {
-          height: 'calc(100% - 55px)',
-          overflow: 'auto',
-          paddingBottom: '53px',
-          position: 'static',
+          height: "calc(100% - 55px)",
+          overflow: "auto",
+          paddingBottom: "53px",
+          position: "static",
         },
       },
       submitting: false,
-      rowId: '',
-    }
+      rowId: "",
+    };
   },
   computed: {
     // 动态设置列
     tableColumns() {
-      const columns = [...this.columns]
-      return columns.filter((item) => item.show)
+      const columns = [...this.columns];
+      return columns.filter((item) => item.show);
     },
     offset() {
-      return (this.page - 1) * this.limit
+      return (this.page - 1) * this.limit;
     },
   },
   methods: {
     getData() {
-      if (this.loading) return
-      this.loading = true
+      if (this.loading) return;
+      this.loading = true;
       // 下面的 params 是获取的表单查询参数
-      const params = this.$parent.$parent.$refs.form.data
+      const params = this.$parent.$parent.$refs.form.data;
       getUserList({}).then((res) => {
-        this.handleClearSelect()
-        this.list = res.data
-        this.total = res.total
-        this.loading = false
-      })
-      this.loading = false
+        this.handleClearSelect();
+        this.list = res.data;
+        this.total = res.total;
+        this.loading = false;
+      });
+      this.loading = false;
     },
     // 改变表格尺寸
     handleChangeTableSize(size) {
-      this.tableSize = size
+      this.tableSize = size;
     },
     // 表格全屏
     handleFullscreen() {
-      this.tableFullscreen = !this.tableFullscreen
-      this.$emit('on-fullscreen', this.tableFullscreen)
+      this.tableFullscreen = !this.tableFullscreen;
+      this.$emit("on-fullscreen", this.tableFullscreen);
     },
     // 刷新表格数据
     handleRefresh() {
-      this.getData()
+      this.getData();
     },
     // 切换页码
     handleChangePage(page) {
-      this.page = page
-      this.getData()
+      this.page = page;
+      this.getData();
     },
     // 切换每页条数
     handleChangePageSize(size) {
-      this.page = 1
-      this.limit = size
-      this.getData()
+      this.page = 1;
+      this.limit = size;
+      this.getData();
     },
     // 排序
     handleSortChange({ key, order }) {
-      this.page = 1
-      this.sortType = order
-      this.sortKey = key
-      this.getData()
+      this.page = 1;
+      this.sortType = order;
+      this.sortKey = key;
+      this.getData();
     },
     // 选中一项，将数据添加至已选项中
     handleSelect(selection, row) {
-      this.selectedData.push(row)
+      this.selectedData.push(row);
     },
     // 取消选中一项，将取消的数据从已选项中删除
     handleSelectCancel(selection, row) {
-      const index = this.selectedData.findIndex((item) => item.id === row.id)
-      this.selectedData.splice(index, 1)
+      const index = this.selectedData.findIndex((item) => item.id === row.id);
+      this.selectedData.splice(index, 1);
     },
     // 当前页全选时，判断已选数据是否存在，不存在则添加
     handleSelectAll(selection) {
       selection.forEach((item) => {
         if (this.selectedData.findIndex((i) => i.id === item.id) < 0) {
-          this.selectedData.push(item)
+          this.selectedData.push(item);
         }
-      })
+      });
     },
     // 清空所有已选项
     handleClearSelect() {
-      this.selectedData = []
+      this.selectedData = [];
     },
     // 查找单一用户信息
     handleGetUser(id) {
-      return this.list.find((item) => item.id === id)
+      return this.list.find((item) => item.id === id);
     },
     // 删除
-    handleDelete(id) {
-      if (this.loading) return
+    handleDelete(row) {
+      if (this.loading) return;
       this.$Modal.confirm({
-        title: '删除确认',
-        content: `您确认要删除用户<strong>${
-          this.handleGetUser(id).name
-        }</strong>？`,
+        title: "删除确认",
+        content: `您确认要删除用户<strong>${row.nickname}</strong>？`,
         loading: true,
         onOk: () => {
-          DeleteUser({
-            id,
+          deleteUsers({
+            id: row._id,
           }).then((res) => {
-            this.$Modal.remove()
-            this.$Message.error(res.msg)
+            this.$Modal.remove();
+            this.$Message.error(res.message);
+            this.getData();
             // 完成后刷新数据
             // this.handleClearSelect();
             // this.handleChangePage(1);
-          })
+          });
         },
-      })
+      });
     },
     // 批量删除
     handleDeleteMultiple() {
-      if (this.loading) return
-      const ids = this.selectedData.map((item) => item.id)
-      const names = this.selectedData.map((item) => item.name)
+      if (this.loading) return;
+      const ids = this.selectedData.map((item) => item._id);
+      const names = this.selectedData.map((item) => item.nickname);
       this.$Modal.confirm({
-        title: '删除确认',
+        title: "删除确认",
         content: `您确认要删除用户<strong>${names}</strong>？`,
         loading: true,
         onOk: () => {
-          DeleteUserMultiple({
+          deleteUsers({
             ids,
           }).then((res) => {
-            this.$Modal.remove()
-            this.$Message.error(res.msg)
+            this.$Modal.remove();
+            this.$Message.error(res.message);
+            this.getData();
             // 完成后刷新数据
             // this.handleClearSelect();
             // this.handleChangePage(1);
-          })
+          });
         },
-      })
+      });
     },
     // 编辑
     handleEdit(row) {
@@ -548,105 +543,105 @@ export default {
       //   'YYYY-MM-DD'
       // )
       // this.userInfoString = JSON.stringify(this.userInfo)
-      this.drawer.type = 'edit'
-      this.drawer.show = true
-      this.rowId = row._id
-      this.handleInitUserInfoForm()
+      this.drawer.type = "edit";
+      this.drawer.show = true;
+      this.rowId = row._id;
+      this.handleInitUserInfoForm();
     },
     // 关闭编辑
     handleCloseEdit() {
       // 判断内容是否修改，没修改则直接关闭
-      if (this.drawer.type === 'edit') {
-        const editUserInfo = cloneDeep(this.userInfo)
+      if (this.drawer.type === "edit") {
+        const editUserInfo = cloneDeep(this.userInfo);
 
-        const editUserInfoString = JSON.stringify(editUserInfo)
+        const editUserInfoString = JSON.stringify(editUserInfo);
 
         if (editUserInfoString !== this.userInfoString) {
           return new Promise((resolve) => {
             this.$Modal.confirm({
-              title: '关闭确认',
-              content: '您已经修改了用户信息，是否直接关闭？',
+              title: "关闭确认",
+              content: "您已经修改了用户信息，是否直接关闭？",
               onOk: () => {
-                resolve()
+                resolve();
               },
-            })
-          })
+            });
+          });
         }
       }
     },
     // 用户详情
     handleClickRow(row) {
-      this.userInfo = cloneDeep(this.handleGetUser(row.id))
-      this.drawer.type = 'read'
-      this.drawer.show = true
-      this.handleInitUserInfoForm()
+      this.userInfo = cloneDeep(this.handleGetUser(row.id));
+      this.drawer.type = "read";
+      this.drawer.show = true;
+      this.handleInitUserInfoForm();
     },
     // 添加用户
     handleOpenCreate() {
       this.userInfo = {
-        id: '',
-        name: '',
-        avatar: '',
-        account: '',
-        phone: '',
-        mail: '',
+        id: "",
+        name: "",
+        avatar: "",
+        account: "",
+        phone: "",
+        mail: "",
         gender: 1,
         status: 1,
-        date: '',
-        birthday: '',
+        date: "",
+        birthday: "",
         region: [],
         role: [],
-        desc: '',
-      }
-      this.drawer.type = 'new'
-      this.drawer.show = true
-      this.handleInitUserInfoForm()
+        desc: "",
+      };
+      this.drawer.type = "new";
+      this.drawer.show = true;
+      this.handleInitUserInfoForm();
     },
     handleSubmitEdit() {
       editUserInfo({
         id: this.rowId,
-        nickname: '宿雨111',
+        nickname: "宿雨",
       }).then((res) => {
-        this.$Message.success(res.message)
-        this.getData()
-      })
+        this.$Message.success(res.message);
+        this.getData();
+      });
     },
     handleSubmitNew() {
-      let str = (Math.random() + '').substring(3, 12)
+      let str = (Math.random() + "").substring(3, 13);
       let user = {
-        name: str,
-        nickname: str + '@qq.com',
-        password: '123456',
-      }
+        name: str + "@qq.com",
+        nickname: "用户" + str,
+        password: "123456",
+      };
 
       addUser(user).then((res) => {
-        this.$Message.success(res.message)
-        this.getData()
-      })
-      return
+        this.$Message.success(res.message);
+        this.getData();
+      });
+      return;
       this.$refs.userInfoForm.validate((valid) => {
         if (valid) {
-          if (this.submitting) return
-          this.submitting = true
+          if (this.submitting) return;
+          this.submitting = true;
           CreateUser(this.userInfo).then((res) => {
-            this.submitting = false
-            this.drawer.show = false
-            this.$Message.error(res.msg)
+            this.submitting = false;
+            this.drawer.show = false;
+            this.$Message.error(res.msg);
             // 完成后刷新数据
             // this.handleClearSelect();
             // this.handleChangePage(1);
-          })
+          });
         }
-      })
+      });
     },
     handleInitUserInfoForm() {
-      this.userInfoFormReady = false
+      this.userInfoFormReady = false;
       this.$nextTick(() => {
-        this.userInfoFormReady = true
-      })
+        this.userInfoFormReady = true;
+      });
     },
   },
-}
+};
 </script>
 <style lang="less">
 .page-sys-user {
