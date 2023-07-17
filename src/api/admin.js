@@ -34,7 +34,7 @@ export const getCaptcha = (data) => {
 
 export const editUserInfo = (data) => {
     return request({
-        url: '/platform/user/eidt',
+        url: '/admin/user/eidt',
         method: 'post',
         data
     });
@@ -42,7 +42,7 @@ export const editUserInfo = (data) => {
 
 export const addUser = (data) => {
     return request({
-        url: '/platform/user/add',
+        url: '/admin/user/add',
         method: 'post',
         data
     });
@@ -50,7 +50,7 @@ export const addUser = (data) => {
 
 export const deleteUsers = (data) => {
     return request({
-        url: '/platform/user/delete',
+        url: '/admin/user/delete',
         method: 'post',
         data
     });
